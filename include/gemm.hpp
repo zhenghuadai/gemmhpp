@@ -1,5 +1,9 @@
 #include <immintrin.h>
+#if defined(ENABLE_OMP) && (ENABLE_OMP != 0)
 #include <omp.h>
+#else
+#define omp_get_thread_num() 0
+#endif
 #ifdef __AVX__
 typedef __m256d __d4v;
 inline __d4v _avx0() { return _mm256_setzero_pd(); }
@@ -93,7 +97,7 @@ __inline __d4v _avx_load_d4(double const *__P) { return *(__d4v *)__P; }
 #define _c4A(bi, bk, i, k) pblkA[(k)*4 + (i)]
 #define _c6A(bi, bk, i, k) pblkA[(k)*6 + (i)]
 #define _c8A(bi, bk, i, k) pblkA[(k)*8 + (i)]
-#define _cXA(bi, bk, i, k, Stride) pblkA[(k)*(Stride) + (i)]
+#define _cXA(bi, bk, i, k, Stride) pblkA[(k) * (Stride) + (i)]
 #define _c4AAAA(bi, bk, i, k) pblkA[((k) >> 2) * 16 + (i)*4 + ((k)&3)]
 
 #define _c8B(bk, bj, k, j, p) pblkB[(j)*KB + (k)*8 + (p)]
@@ -595,7 +599,7 @@ void betaC(int MB, int NB, T beta, T *C, int ldc) {
 #if 1
 #define PREFETCH(...) _mm_prefetch(__VA_ARGS__)
 #else
-#define PREFETCH(...) 
+#define PREFETCH(...)
 #endif
 template <typename T, int MB, int NB, int KB, int RMB = 6>
 void gemm002(const int M, const int N, const int K, const T alpha, const T *A,
